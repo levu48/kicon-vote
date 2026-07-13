@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.local
+.DS_Store
+# Vite loads .env.* ; keep any secret-bearing local overrides out of git.
+.env.local
+.env.*.local
