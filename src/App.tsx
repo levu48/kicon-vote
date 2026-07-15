@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { User } from 'oidc-client-ts';
-import { getUser, login, logout, completeLogin, fetchUserInfo } from './auth';
+import { getUser, login, loginPopup, logout, completeLogin, fetchUserInfo } from './auth';
+import HelloWorld from './HelloWorld';
 
 type State =
   | { phase: 'loading' }
@@ -52,6 +53,19 @@ export default function App() {
             <button style={styles.btn} onClick={() => void login()}>
               Sign in with Kicon
             </button>
+            <button
+              style={{ ...styles.btn, background: '#2c3240', marginLeft: 10 }}
+              title="Popup flow — this is what an embedded widget on a partner site uses"
+              onClick={() =>
+                loginPopup()
+                  .then((user) => setState({ phase: 'signed-in', user }))
+                  .catch((e) =>
+                    setState({ phase: 'error', message: e instanceof Error ? e.message : String(e) }),
+                  )
+              }
+            >
+              Sign in (popup)
+            </button>
           </>
         )}
 
@@ -61,18 +75,13 @@ export default function App() {
 
         {state.phase === 'signed-in' && (
           <>
-            <p style={styles.muted}>
-              Signed in as <strong>{String(state.user.profile.name ?? state.user.profile.sub)}</strong>
-            </p>
+            <HelloWorld user={state.user} onSignOut={() => void logout()} />
             <Section title="id_token claims">
               <Claims data={state.user.profile as Record<string, unknown>} />
             </Section>
             <Section title="/me (userinfo — live token call)">
               {state.userinfo ? <Claims data={state.userinfo} /> : <p style={styles.muted}>loading…</p>}
             </Section>
-            <button style={styles.btn} onClick={() => void logout()}>
-              Sign out
-            </button>
           </>
         )}
       </div>

@@ -22,6 +22,11 @@ export const userManager = new UserManager({
   // Derive from the current origin so dev (:8084) and prod (vote.kicon.com) both
   // work without per-env config — these must match the registered redirect_uris.
   redirect_uri: `${window.location.origin}/auth/callback`,
+  // Popup flow (for embedding on partner sites): the popup navigates here after
+  // auth. It runs top-level against auth.kicon.com, so first-party cookies apply
+  // and an existing SSO session completes with no prompt — no third-party cookies.
+  // Must be registered as a redirect_uri on the vote client in the IdP repo.
+  popup_redirect_uri: `${window.location.origin}/auth/popup-callback`,
   post_logout_redirect_uri: `${window.location.origin}/`,
   response_type: 'code',
   scope: 'openid profile email offline_access',
@@ -39,6 +44,20 @@ export const getUser = (): Promise<User | null> => userManager.getUser();
 export const login = (): Promise<void> => userManager.signinRedirect();
 export const completeLogin = (): Promise<User> => userManager.signinRedirectCallback();
 export const logout = (): Promise<void> => userManager.signoutRedirect();
+
+/**
+ * Popup sign-in — the flow to use when the app is embedded in a partner site.
+ * Opens auth.kicon.com in a top-level popup window (first-party context), so a
+ * seamless SSO session there completes without a prompt. Tokens land in THIS
+ * origin's store; the partner page never sees them. Resolves with the User.
+ */
+export const loginPopup = (): Promise<User> => userManager.signinPopup();
+
+/**
+ * Runs inside the popup window at /auth/popup-callback: finishes the handshake
+ * (posts the result to the opener) and closes the popup. See main.tsx.
+ */
+export const completePopup = (): Promise<void> => userManager.signinPopupCallback();
 
 /** Live call to the IdP userinfo endpoint (/me) with the access token. */
 export async function fetchUserInfo(accessToken: string): Promise<Record<string, unknown>> {
