@@ -1,0 +1,81 @@
+name: Deploy admin → admin.vote.kicon.com
+
+# Auto-deploy the admin SPA to admin.vote.kicon.com on every push to main.
+# Admin is a SEPARATE origin and a SEPARATE artifact from the consumer surface —
+# its own workflow, its own docroot, never merged with or shipped from the
+# consumer pipeline. It must be served with framing denied (see the nginx site).
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'admin/**'
+      - 'shared/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-admin.yml'
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-admin
+  cancel-in-progress: false
+
+env:
+  DEPLOY_HOST: 68.183.121.168
+  DEPLOY_USER: deploy
+  # nginx docroot for admin.vote.kicon.com — must match the `root` in the nginx
+  # site. Distinct from the consumer docroot: the two bundles never co-mingle.
+  DEPLOY_PATH: /var/www/admin.vote.kicon.com/html
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # This repo → ./kicon-vote, the private platform lib → ./kicon-platform,
+      # so admin's `file:../../kicon-platform` dependency resolves as a sibling.
+      - name: Checkout kicon-vote
+        uses: actions/checkout@v4
+        with:
+          path: kicon-vote
+
+      - name: Checkout kicon-platform (private sibling)
+        uses: actions/checkout@v4
+        with:
+          repository: levu48/kicon-platform
+          token: ${{ secrets.PLATFORM_REPO_TOKEN }}
+          path: kicon-platform
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build @kicon/platform
+        working-directory: kicon-platform
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install kicon-vote deps
+        working-directory: kicon-vote
+        run: npm ci
+
+      - name: Build admin bundle
+        working-directory: kicon-vote
+        run: npm run build:admin
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          cat > ~/.ssh/known_hosts <<'EOF'
+          68.183.121.168 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJBrIFeO0Tdu4anmcHXsqUHV99ohszah+tdoje3FCXNq
+          EOF
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy to admin.vote.kicon.com
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o UserKnownHostsFile=~/.ssh/known_hosts" \
+            kicon-vote/admin/dist/ \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/"
