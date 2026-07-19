@@ -1,4 +1,5 @@
-import type { User } from 'oidc-client-ts';
+import type { User } from '@kicon/platform/oidc';
+import { Badge, Button, theme } from '@kicon/platform/ui';
 
 /**
  * Placeholder landing page shown after a successful login.
@@ -15,45 +16,18 @@ export default function HelloWorld({
   const name = String(user.profile.name ?? user.profile.email ?? user.profile.sub);
 
   return (
-    <div style={styles.wrap}>
-      <div style={styles.badge}>✅ signed in</div>
-      <h1 style={styles.h1}>Hello, {name} 👋</h1>
-      <p style={styles.sub}>
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ marginBottom: 14 }}>
+        <Badge>✅ signed in</Badge>
+      </div>
+      <h1 style={{ fontSize: '1.4rem', margin: '0 0 8px' }}>Hello, {name} 👋</h1>
+      <p style={{ margin: 0, color: theme.color.muted, fontSize: '.9rem', lineHeight: 1.6 }}>
         You’re authenticated against <strong>auth.kicon.com</strong>. This is a
         placeholder landing page — polls and votes will live here soon.
       </p>
-      <button style={styles.btn} onClick={onSignOut}>
+      <Button style={{ marginTop: 22 }} onClick={onSignOut}>
         Sign out
-      </button>
+      </Button>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  wrap: { textAlign: 'center' },
-  badge: {
-    display: 'inline-block',
-    fontSize: '.7rem',
-    textTransform: 'uppercase',
-    letterSpacing: '.06em',
-    color: '#7ee0a8',
-    background: '#123024',
-    border: '1px solid #1f5c3f',
-    borderRadius: 999,
-    padding: '3px 10px',
-    marginBottom: 14,
-  },
-  h1: { fontSize: '1.4rem', margin: '0 0 8px' },
-  sub: { margin: 0, color: '#aab1c0', fontSize: '.9rem', lineHeight: 1.6 },
-  btn: {
-    marginTop: 22,
-    padding: '11px 16px',
-    border: 0,
-    borderRadius: 9,
-    background: '#4f7cff',
-    color: '#fff',
-    fontWeight: 600,
-    fontSize: '.95rem',
-    cursor: 'pointer',
-  },
-};

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import type { User } from 'oidc-client-ts';
+import type { User } from '@kicon/platform/oidc';
+import type { KiconClaims } from '@kicon/platform/types';
+import { AppShell, Panel, Button, Section, Claims, ErrorText, theme } from '@kicon/platform/ui';
 import { getUser, login, loginPopup, logout, completeLogin, fetchUserInfo } from './auth';
 import HelloWorld from './HelloWorld';
 
@@ -7,7 +9,7 @@ type State =
   | { phase: 'loading' }
   | { phase: 'anonymous' }
   | { phase: 'error'; message: string }
-  | { phase: 'signed-in'; user: User; userinfo?: Record<string, unknown> };
+  | { phase: 'signed-in'; user: User; userinfo?: KiconClaims };
 
 export default function App() {
   const [state, setState] = useState<State>({ phase: 'loading' });
@@ -40,21 +42,22 @@ export default function App() {
   }, [state]);
 
   return (
-    <main style={styles.page}>
-      <div style={styles.card}>
-        <h1 style={styles.h1}>🗳️ Kicon Vote</h1>
-        <p style={styles.sub}>First app-platform client of auth.kicon.com — SPA + PKCE.</p>
+    <AppShell>
+      <Panel>
+        <h1 style={{ fontSize: '1.3rem', margin: '0 0 4px' }}>🗳️ Kicon Vote</h1>
+        <p style={{ margin: '0 0 16px', color: theme.color.muted, fontSize: '.85rem' }}>
+          First app-platform client of auth.kicon.com — SPA + PKCE.
+        </p>
 
         {state.phase === 'loading' && <p>…</p>}
 
         {state.phase === 'anonymous' && (
           <>
-            <p style={styles.muted}>You are not signed in.</p>
-            <button style={styles.btn} onClick={() => void login()}>
-              Sign in with Kicon
-            </button>
-            <button
-              style={{ ...styles.btn, background: '#2c3240', marginLeft: 10 }}
+            <p style={{ color: theme.color.muted }}>You are not signed in.</p>
+            <Button onClick={() => void login()}>Sign in with Kicon</Button>
+            <Button
+              variant="secondary"
+              style={{ marginLeft: 10 }}
               title="Popup flow — this is what an embedded widget on a partner site uses"
               onClick={() =>
                 loginPopup()
@@ -65,13 +68,11 @@ export default function App() {
               }
             >
               Sign in (popup)
-            </button>
+            </Button>
           </>
         )}
 
-        {state.phase === 'error' && (
-          <p style={styles.err}>Auth error: {state.message}</p>
-        )}
+        {state.phase === 'error' && <ErrorText>Auth error: {state.message}</ErrorText>}
 
         {state.phase === 'signed-in' && (
           <>
@@ -80,73 +81,15 @@ export default function App() {
               <Claims data={state.user.profile as Record<string, unknown>} />
             </Section>
             <Section title="/me (userinfo — live token call)">
-              {state.userinfo ? <Claims data={state.userinfo} /> : <p style={styles.muted}>loading…</p>}
+              {state.userinfo ? (
+                <Claims data={state.userinfo} />
+              ) : (
+                <p style={{ color: theme.color.muted }}>loading…</p>
+              )}
             </Section>
           </>
         )}
-      </div>
-    </main>
+      </Panel>
+    </AppShell>
   );
 }
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ marginTop: 18 }}>
-      <div style={styles.sectionTitle}>{title}</div>
-      {children}
-    </div>
-  );
-}
-
-function Claims({ data }: { data: Record<string, unknown> }) {
-  return (
-    <pre style={styles.pre}>
-      {JSON.stringify(data, null, 2)}
-    </pre>
-  );
-}
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: '100vh',
-    margin: 0,
-    display: 'grid',
-    placeItems: 'center',
-    background: '#0f1115',
-    color: '#e7e9ee',
-    font: '15px/1.5 system-ui, sans-serif',
-  },
-  card: {
-    width: 'min(92vw, 480px)',
-    background: '#171a21',
-    border: '1px solid #262b36',
-    borderRadius: 14,
-    padding: 28,
-    boxShadow: '0 10px 40px rgba(0,0,0,.4)',
-  },
-  h1: { fontSize: '1.3rem', margin: '0 0 4px' },
-  sub: { margin: '0 0 16px', color: '#aab1c0', fontSize: '.85rem' },
-  muted: { color: '#aab1c0' },
-  err: { color: '#ffb3bd', background: '#3a1d22', border: '1px solid #6b2d38', padding: '8px 11px', borderRadius: 8 },
-  btn: {
-    marginTop: 18,
-    padding: '11px 16px',
-    border: 0,
-    borderRadius: 9,
-    background: '#4f7cff',
-    color: '#fff',
-    fontWeight: 600,
-    fontSize: '.95rem',
-    cursor: 'pointer',
-  },
-  sectionTitle: { fontSize: '.75rem', textTransform: 'uppercase', letterSpacing: '.06em', color: '#6b7280', marginBottom: 6 },
-  pre: {
-    margin: 0,
-    background: '#0f1115',
-    border: '1px solid #2c3240',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: '.8rem',
-    overflowX: 'auto',
-  },
-};

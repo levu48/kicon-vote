@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@kicon/platform": "file:../kicon-platform",
     "oidc-client-ts": "^3.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
@@ -17,8 +18,8 @@
   "devDependencies": {
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.2",
+    "@vitejs/plugin-react": "^6.0.3",
     "typescript": "^5.6.2",
-    "vite": "^5.4.8"
+    "vite": "^8.1.5"
   }
 }
