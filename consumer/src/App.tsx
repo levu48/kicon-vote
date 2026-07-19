@@ -3,7 +3,7 @@ import type { User } from '@kicon/platform/oidc';
 import type { KiconClaims } from '@kicon/platform/types';
 import { AppShell, Panel, Button, Section, Claims, ErrorText, theme } from '@kicon/platform/ui';
 import { getUser, login, loginPopup, logoutPopup, completeLogin, fetchUserInfo } from './auth';
-import HelloWorld from './HelloWorld';
+import Vote from './Vote';
 
 type State =
   | { phase: 'loading' }
@@ -76,7 +76,7 @@ export default function App() {
 
         {state.phase === 'signed-in' && (
           <>
-            <HelloWorld
+            <Vote
               user={state.user}
               onSignOut={() =>
                 logoutPopup()
