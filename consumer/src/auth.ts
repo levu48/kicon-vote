@@ -25,5 +25,7 @@ export const {
   completeLogin,
   completePopup,
   logout,
+  logoutPopup,
+  completeLogoutPopup,
   fetchUserInfo,
 } = auth;

@@ -41,7 +41,11 @@ diverge from these without changing the IdP (`src/oidc/clients.ts`):
 - **grants:** `authorization_code`, `refresh_token` · **response_type:** `code`
 - **redirect_uris:** `http://localhost:8084/auth/callback` (dev),
   `https://vote.kicon.com/auth/callback` (prod)
-- **post_logout_redirect_uris:** `http://localhost:8084/`, `https://vote.kicon.com/`
+- **post_logout_redirect_uris:** `http://localhost:8084/`, `https://vote.kicon.com/`,
+  `http://localhost:8084/auth/popup-logout-callback`,
+  `https://vote.kicon.com/auth/popup-logout-callback` (the last two are for
+  **popup RP-logout** — the embedded widget can't navigate its own iframe to the
+  IdP end-session page since auth denies framing, so it signs out via a popup)
 - **scopes:** `openid profile email offline_access`
 - **assurance:** standard (loa1 / `acr` pwd); seamless SSO allowed
 
