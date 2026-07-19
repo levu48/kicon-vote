@@ -1,0 +1,84 @@
+name: Deploy consumer → vote.kicon.com
+
+# Auto-deploy the consumer SPA to the nginx box behind vote.kicon.com on every
+# push to main. Admin (admin.vote.kicon.com) is deliberately NOT built here — it
+# is a separate origin/artifact and must never ship from the consumer pipeline.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'consumer/**'
+      - 'shared/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-consumer.yml'
+  workflow_dispatch: {}
+
+# Never let two deploys race the docroot.
+concurrency:
+  group: deploy-consumer
+  cancel-in-progress: false
+
+env:
+  DEPLOY_HOST: 68.183.121.168
+  DEPLOY_USER: deploy
+  # nginx docroot for vote.kicon.com — must match the `root` in the nginx site.
+  DEPLOY_PATH: /var/www/vote.kicon.com/html
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # This repo → ./kicon-vote, the private platform lib → ./kicon-platform,
+      # so consumer's `file:../../kicon-platform` dependency resolves as a sibling.
+      - name: Checkout kicon-vote
+        uses: actions/checkout@v4
+        with:
+          path: kicon-vote
+
+      - name: Checkout kicon-platform (private sibling)
+        uses: actions/checkout@v4
+        with:
+          repository: levu48/kicon-platform
+          token: ${{ secrets.PLATFORM_REPO_TOKEN }}
+          path: kicon-platform
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Build the platform lib's dist first — consumer imports its compiled output.
+      - name: Build @kicon/platform
+        working-directory: kicon-platform
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install kicon-vote deps
+        working-directory: kicon-vote
+        run: npm ci
+
+      - name: Build consumer bundle
+        working-directory: kicon-vote
+        run: npm run build:consumer
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          cat > ~/.ssh/known_hosts <<'EOF'
+          68.183.121.168 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJBrIFeO0Tdu4anmcHXsqUHV99ohszah+tdoje3FCXNq
+          EOF
+          chmod 644 ~/.ssh/known_hosts
+
+      # --delete keeps the docroot an exact mirror of the fresh build (removes
+      # stale hashed assets). Trailing slash on the source copies contents, not
+      # the dir itself.
+      - name: Deploy to vote.kicon.com
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o UserKnownHostsFile=~/.ssh/known_hosts" \
+            kicon-vote/consumer/dist/ \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/"
