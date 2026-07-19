@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { User } from '@kicon/platform/oidc';
 import type { KiconClaims } from '@kicon/platform/types';
 import { AppShell, Panel, Button, Section, Claims, ErrorText, theme } from '@kicon/platform/ui';
-import { getUser, login, loginPopup, logout, completeLogin, fetchUserInfo } from './auth';
+import { getUser, login, loginPopup, logoutPopup, completeLogin, fetchUserInfo } from './auth';
 import HelloWorld from './HelloWorld';
 
 type State =
@@ -76,7 +76,16 @@ export default function App() {
 
         {state.phase === 'signed-in' && (
           <>
-            <HelloWorld user={state.user} onSignOut={() => void logout()} />
+            <HelloWorld
+              user={state.user}
+              onSignOut={() =>
+                logoutPopup()
+                  .then(() => setState({ phase: 'anonymous' }))
+                  .catch((e) =>
+                    setState({ phase: 'error', message: e instanceof Error ? e.message : String(e) }),
+                  )
+              }
+            />
             <Section title="id_token claims">
               <Claims data={state.user.profile as Record<string, unknown>} />
             </Section>
