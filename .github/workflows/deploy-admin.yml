@@ -33,19 +33,19 @@ jobs:
       # This repo → ./kicon-vote, the private platform lib → ./kicon-platform,
       # so admin's `file:../../kicon-platform` dependency resolves as a sibling.
       - name: Checkout kicon-vote
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: kicon-vote
 
       - name: Checkout kicon-platform (private sibling)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: levu48/kicon-platform
           token: ${{ secrets.PLATFORM_REPO_TOKEN }}
           path: kicon-platform
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
 
