@@ -2,24 +2,20 @@
   "name": "kicon-vote",
   "version": "0.0.1",
   "private": true,
-  "description": "Kicon Vote — first app-platform client of auth.kicon.com (public SPA + PKCE).",
+  "description": "Kicon Vote — the vote app of the kicon platform. Two surfaces on two origins: consumer/ (vote.kicon.com) and admin/ (admin.vote.kicon.com), sharing shared/. Clients of auth.kicon.com.",
   "type": "module",
+  "workspaces": [
+    "shared",
+    "consumer",
+    "admin"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@kicon/platform": "file:../kicon-platform",
-    "oidc-client-ts": "^3.1.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
-  "devDependencies": {
-    "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^6.0.3",
-    "typescript": "^5.6.2",
-    "vite": "^8.1.5"
+    "dev:consumer": "npm run dev -w @kicon-vote/consumer",
+    "dev:admin": "npm run dev -w @kicon-vote/admin",
+    "build": "npm run build -w @kicon-vote/consumer && npm run build -w @kicon-vote/admin",
+    "build:consumer": "npm run build -w @kicon-vote/consumer",
+    "build:admin": "npm run build -w @kicon-vote/admin",
+    "preview:consumer": "npm run preview -w @kicon-vote/consumer",
+    "preview:admin": "npm run preview -w @kicon-vote/admin"
   }
 }

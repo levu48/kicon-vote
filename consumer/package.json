@@ -1,0 +1,26 @@
+{
+  "name": "@kicon-vote/consumer",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Vote consumer surface — the embeddable public SPA served at vote.kicon.com (OAuth client `vote`). Framed into partner sites; never contains admin code.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@kicon-vote/shared": "*",
+    "@kicon/platform": "file:../../kicon-platform",
+    "oidc-client-ts": "^3.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^6.0.3",
+    "typescript": "^5.6.2",
+    "vite": "^8.1.5"
+  }
+}

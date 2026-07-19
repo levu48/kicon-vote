@@ -1,0 +1,10 @@
+{
+  "name": "@kicon-vote/shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Vote-local code shared by both surfaces (consumer + admin). Unpublished — anything shared ACROSS apps belongs in @kicon/platform instead. Dependency is one-way: the surfaces import this; this imports neither.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
