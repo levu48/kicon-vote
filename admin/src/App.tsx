@@ -3,6 +3,7 @@ import type { User } from '@kicon/platform/oidc';
 import type { KiconClaims } from '@kicon/platform/types';
 import { AppShell, Panel, Button, Section, Claims, ErrorText, Badge, theme } from '@kicon/platform/ui';
 import { getUser, login, logout, completeLogin, fetchUserInfo } from './auth';
+import Polls from './Polls';
 
 type State =
   | { phase: 'loading' }
@@ -66,11 +67,12 @@ export default function App() {
             <p style={{ color: theme.color.muted }}>
               Signed in as{' '}
               <strong>{String(state.user.profile.name ?? state.user.profile.email ?? state.user.profile.sub)}</strong>.
-              Poll/config/moderation tools will live here — see roadmap in CLAUDE.md.
             </p>
             <Button variant="secondary" style={{ marginTop: 12 }} onClick={() => void logout()}>
               Sign out
             </Button>
+            <Polls />
+
             <Section title="id_token claims">
               <Claims data={state.user.profile as Record<string, unknown>} />
             </Section>

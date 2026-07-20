@@ -1,4 +1,5 @@
 import { createAuthClient } from '@kicon/platform/oidc';
+import { KICON_API_RESOURCE, VOTE_API_SCOPES } from '@kicon-vote/shared';
 import { VOTE_CLIENTS } from '@kicon-vote/shared';
 
 /**
@@ -18,7 +19,9 @@ import { VOTE_CLIENTS } from '@kicon-vote/shared';
 export const auth = createAuthClient({
   authority: import.meta.env.VITE_OIDC_AUTHORITY,
   clientId: VOTE_CLIENTS.admin,
-  scope: 'openid profile email',
+  // No offline_access: the privileged session is the access token's lifetime.
+  scope: `openid profile email ${VOTE_API_SCOPES.admin}`,
+  resource: KICON_API_RESOURCE,
   prompt: 'login',
   automaticSilentRenew: false,
 });

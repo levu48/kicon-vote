@@ -26,5 +26,31 @@ export const VOTE_CLIENTS = {
 /** Baseline scopes every vote surface requests. */
 export const VOTE_SCOPES = 'openid profile email offline_access';
 
+/**
+ * The resource server this app calls, as an RFC 8707 resource indicator.
+ *
+ * This value MUST match `API_AUDIENCE` at api.kicon.com and the identifier
+ * registered in kicon-auth's src/oidc/resource-servers.ts. All three move
+ * together — a mismatch means the IdP mints a token the API rejects on every
+ * request.
+ *
+ * Without it the IdP issues a userinfo-audience OPAQUE token, which the API
+ * cannot verify: login appears to succeed and every API call returns 401.
+ */
+export const KICON_API_RESOURCE = 'https://api.kicon.com';
+
+/**
+ * Resource-server scopes per surface.
+ *
+ * Requesting more than a client is registered for is not an error — the IdP
+ * silently issues less (its per-client map in resource-servers.ts is the real
+ * boundary). So these are what each surface EXPECTS to receive, not a
+ * privilege claim: the consumer genuinely cannot obtain vote:admin.
+ */
+export const VOTE_API_SCOPES = {
+  consumer: 'vote:read vote:write',
+  admin: 'vote:read vote:write vote:admin',
+} as const;
+
 /** The IdP tenant this whole app belongs to (never food/civic/trader). */
 export const VOTE_TENANT = 'apps';
