@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import type { User } from '@kicon/platform/oidc';
-import type { KiconClaims } from '@kicon/platform/types';
 import { AppShell, Panel, Button, Section, Claims, ErrorText, theme } from '@kicon/platform/ui';
-import { getUser, login, loginPopup, logoutPopup, completeLogin, fetchUserInfo } from './auth';
+import { getUser, login, loginPopup, logoutPopup, completeLogin } from './auth';
 import Vote from './Vote';
 
 type State =
   | { phase: 'loading' }
   | { phase: 'anonymous' }
   | { phase: 'error'; message: string }
-  | { phase: 'signed-in'; user: User; userinfo?: KiconClaims };
+  | { phase: 'signed-in'; user: User };
 
 export default function App() {
   const [state, setState] = useState<State>({ phase: 'loading' });
@@ -31,15 +30,6 @@ export default function App() {
       }
     })();
   }, []);
-
-  // Once signed in, prove the access token works by calling /me (userinfo).
-  useEffect(() => {
-    if (state.phase === 'signed-in' && !state.userinfo && state.user.access_token) {
-      fetchUserInfo(state.user.access_token)
-        .then((userinfo) => setState((s) => (s.phase === 'signed-in' ? { ...s, userinfo } : s)))
-        .catch(() => void 0);
-    }
-  }, [state]);
 
   return (
     <AppShell>
@@ -88,13 +78,6 @@ export default function App() {
             />
             <Section title="id_token claims">
               <Claims data={state.user.profile as Record<string, unknown>} />
-            </Section>
-            <Section title="/me (userinfo — live token call)">
-              {state.userinfo ? (
-                <Claims data={state.userinfo} />
-              ) : (
-                <p style={{ color: theme.color.muted }}>loading…</p>
-              )}
             </Section>
           </>
         )}
